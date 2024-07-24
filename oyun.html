@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kaplumbağa</title>
+  <style>
+    #game-container {
+      position: relative;
+      width: 1000px;
+      height: 520px;
+      border: 1px solid black;
+      background-image: url('forest.jpg');
+      background-size: cover;
+    }
+
+    #player {
+      position: absolute;
+      top: 225px;
+      left: 225px;
+      width: 50px;
+      height: 50px;
+      background-image: url('char.png');
+      background-size: cover;
+    }
+
+    #food {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-image: url('cilek.png');
+      background-size: cover;
+    }
+
+    .obstacle {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-image: url('wall.png');
+      background-size: cover;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="player"></div>
+    <div id="food"></div>
+    <div id="score">Puan: 0</div>
+  </div>
+
+  <script>
+    // Oyun alanı, oyuncu ve yem elementlerini oluşturuyoruz
+    const gameContainer = document.getElementById('game-container');
+    const player = document.getElementById('player');
+    const food = document.getElementById('food');
+    const scoreElement = document.getElementById('score');
+
+    // Oyuncu başlangıç konumu
+    let playerX = 225;
+    let playerY = 225;
+    const playerSpeed = 5;
+
+    // yemin rastgele oluşmasını sağlayan kısım
+    let foodX = Math.floor(Math.random() * 950);
+    let foodY = Math.floor(Math.random() * 470);
+    food.style.left = foodX + 'px';
+    food.style.top = foodY + 'px';
+
+    let score = 0;
+
+    // başlangıçta karakter hemen hareket etsin diye
+    let moveUp = false;
+    let moveDown = false;
+    let moveLeft = false;
+    let moveRight = false;
+
+    
+    const obstacles = [];
+
+    // Tuş hareketleri
+    document.addEventListener('keydown', function(event) {
+      const key = event.key;
+      if (key === 'ArrowUp') {
+        moveUp = true;
+      } else if (key === 'ArrowDown') {
+        moveDown = true;
+      } else if (key === 'ArrowLeft') {
+        moveLeft = true;
+      } else if (key === 'ArrowRight') {
+        moveRight = true;
+      }
+    });
+
+    document.addEventListener('keyup', function(event) {
+      const key = event.key;
+      if (key === 'ArrowUp') {
+        moveUp = false;
+      } else if (key === 'ArrowDown') {
+        moveDown = false;
+      } else if (key === 'ArrowLeft') {
+        moveLeft = false;
+      } else if (key === 'ArrowRight') {
+        moveRight = false;
+      }
+    });
+
+    // karakter pozisyonu
+    function updatePlayerMovement() {
+      if (moveUp && playerY > 0) {
+        playerY -= playerSpeed;
+      } else if (moveDown && playerY < 470) {
+        playerY += playerSpeed;
+      }
+
+      if (moveLeft && playerX > 0) {
+        playerX -= playerSpeed;
+      } else if (moveRight && playerX < 950) {
+        playerX += playerSpeed;
+      }
+
+      player.style.top = playerY + 'px';
+      player.style.left = playerX + 'px';
+
+      // yem ile çarpışma kontrolü
+      if (
+        playerX < foodX + 40 &&
+        playerX + 40 > foodX &&
+        playerY < foodY + 30 &&
+        playerY + 30 > foodY
+      ) {
+        // Yeni yem oluşturma
+        foodX = Math.floor(Math.random() * 950);
+        foodY = Math.floor(Math.random() * 470);
+        food.style.left = foodX + 'px';
+        food.style.top = foodY + 'px';
+
+        score++;
+        scoreElement.textContent = 'Puan: ' + score;
+
+        createObstacle();
+      }
+
+      // Engellerle çarpışma kontrolü
+      for (let obstacle of obstacles) {
+        if (
+          playerX < obstacle.x + 40 &&
+          playerX + 40 > obstacle.x &&
+          playerY < obstacle.y + 30 &&
+          playerY + 30 > obstacle.y
+        ) {
+          alert('Oyun bitti! Toplam Puan: ' + score);
+          window.location.reload(); 
+        }
+      }
+    }
+
+    // Yeni engel oluşturma fonksiyonu
+    function createObstacle() {
+      const obstacle = document.createElement('div');
+      obstacle.className = 'obstacle';
+      const obstacleX = Math.floor(Math.random() * 950);
+      const obstacleY = Math.floor(Math.random() * 470);
+      obstacle.style.left = obstacleX + 'px';
+      obstacle.style.top = obstacleY + 'px';
+      gameContainer.appendChild(obstacle);
+      obstacles.push({element: obstacle, x: obstacleX, y: obstacleY});
+    }
+
+    
+    setInterval(function() {
+      updatePlayerMovement();
+    }, 10);
+  </script>
+</body>
+</html>
